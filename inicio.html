@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glam By Nath - Calculadora</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&amp;family=Nunito:wght@300;400;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF6F0',
+            ivory: '#FFFDF8',
+            gold: '#C9A96E',
+            goldLight: '#E8D5A8',
+            goldDark: '#A8864A',
+            warmWhite: '#FFF9F0',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .font-heading { font-family: 'Cormorant Garamond', serif; }
+    .font-body { font-family: 'Nunito', sans-serif; }
+    .gold-shimmer {
+      background: linear-gradient(135deg, #C9A96E 0%, #E8D5A8 40%, #C9A96E 60%, #A8864A 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-glow { box-shadow: 0 2px 20px rgba(201,169,110,0.08); }
+    .card-glow:hover { box-shadow: 0 4px 30px rgba(201,169,110,0.15); }
+    .btn-gold {
+      background: linear-gradient(135deg, #C9A96E, #E8D5A8, #C9A96E);
+      background-size: 200% 200%;
+      animation: shimmer 3s ease infinite;
+    }
+    @keyframes shimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(16px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    .fade-up-d1 { animation-delay: 0.1s; opacity:0; }
+    .fade-up-d2 { animation-delay: 0.2s; opacity:0; }
+    .fade-up-d3 { animation-delay: 0.3s; opacity:0; }
+    .fade-up-d4 { animation-delay: 0.4s; opacity:0; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+    .check-active { background: linear-gradient(135deg, #C9A96E, #E8D5A8); }
+    
+    /* Modo oscuro */
+    body.dark-mode {
+      background-color: #0f0f13 !important;
+      color: #e2e2e8 !important;
+    }
+    body.dark-mode .bg-white,
+    body.dark-mode .bg-white\/90,
+    body.dark-mode .bg-warmWhite,
+    body.dark-mode .bg-cream,
+    body.dark-mode .card-glow {
+      background-color: #1e1e2a !important;
+    }
+    body.dark-mode .border-stone-200,
+    body.dark-mode .border-stone-100,
+    body.dark-mode .border-stone-300 {
+      border-color: #2d2d3a !important;
+    }
+    body.dark-mode .text-stone-700,
+    body.dark-mode .text-stone-800,
+    body.dark-mode .text-stone-600,
+    body.dark-mode .text-stone-500 {
+      color: #cbd5e1 !important;
+    }
+    body.dark-mode .text-stone-400 {
+      color: #94a3b8 !important;
+    }
+    body.dark-mode h2 {
+      color: #f1f5f9 !important;
+    }
+    body.dark-mode input,
+    body.dark-mode input[type="text"],
+    body.dark-mode input[type="number"] {
+      background-color: #252530 !important;
+      border-color: #3d3d4a !important;
+      color: #e2e2e8 !important;
+    }
+    body.dark-mode input::placeholder {
+      color: #6b7280 !important;
+    }
+    body.dark-mode .modal-container {
+      background-color: #1e1e2a !important;
+      border: 1px solid #3d3d4a !important;
+    }
+    body.dark-mode .price-edit-item {
+      background-color: #252530 !important;
+    }
+    body.dark-mode .border-t {
+      border-color: #2d2d3a !important;
+    }
+    .theme-toggle-btn, .price-edit-btn {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      z-index: 50;
+    }
+    .theme-toggle-btn:hover, .price-edit-btn:hover {
+      transform: scale(1.05);
+    }
+    body.dark-mode .theme-toggle-btn,
+    body.dark-mode .price-edit-btn {
+      background-color: #1e1e2a !important;
+      border-color: #C9A96E !important;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-container {
+      max-width: 500px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.3);
+      background-color: #ffffff;
+    }
+    .modal-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .modal-container::-webkit-scrollbar-track {
+      background: #e0e0e0;
+      border-radius: 10px;
+    }
+    .modal-container::-webkit-scrollbar-thumb {
+      background: #C9A96E;
+      border-radius: 10px;
+    }
+    .price-edit-item {
+      background-color: #f8fafc;
+    }
+  </style>
+ </head>
+ <body class="h-full font-body bg-cream text-stone-700">
+  <div id="app" class="h-full w-full overflow-auto">
+   <header class="text-center pt-8 pb-4 px-4 fade-up relative">
+    <div class="inline-flex items-center gap-2 mb-2">
+     <div class="w-8 h-[1px] bg-gold"></div>
+     <i data-lucide="sparkles" class="w-4 h-4 text-gold"></i>
+     <div class="w-8 h-[1px] bg-gold"></div>
+    </div>
+    <h1 id="salonName" class="font-heading text-4xl md:text-5xl font-bold gold-shimmer tracking-wide">glam.by.nath</h1>
+    <p id="tagline" class="font-body text-sm text-stone-400 mt-1 tracking-widest uppercase">Nail Price Calculator</p>
+    <div class="absolute top-8 right-4 flex gap-2">
+      <button id="priceEditBtn" class="price-edit-btn p-2 rounded-full bg-white shadow-md border border-gold/40">
+        <i data-lucide="dollar-sign" class="w-5 h-5 text-gold"></i>
+      </button>
+      <button id="themeToggleBtn" class="theme-toggle-btn p-2 rounded-full bg-white shadow-md border border-gold/40">
+        <i id="themeIcon" data-lucide="moon" class="w-5 h-5 text-gold"></i>
+      </button>
+    </div>
+   </header>
+   <main class="max-w-xl mx-auto px-4 pb-10 space-y-5">
+    <section class="fade-up fade-up-d1">
+     <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center">1</span>
+      <h2 class="font-heading text-xl font-semibold text-stone-800">Elige tu técnica</h2>
+     </div>
+     <div id="techGrid" class="grid grid-cols-2 gap-2.5"></div>
+    </section>
+    
+    <section class="fade-up fade-up-d2">
+     <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center">2</span>
+      <h2 class="font-heading text-xl font-semibold text-stone-800">¿Necesitas retiro?</h2>
+     </div>
+     <button id="retiroBtn" onclick="toggleRetiro()" class="w-full flex items-center justify-between p-3.5 rounded-xl border-2 border-stone-200 bg-white transition-all hover:border-goldLight">
+      <div class="flex items-center gap-3">
+       <div id="retiroCheck" class="w-6 h-6 rounded-md border-2 border-stone-300 flex items-center justify-center transition-all bg-white">
+        <i data-lucide="check" class="w-3.5 h-3.5 text-white hidden"></i>
+       </div>
+       <span class="font-semibold text-sm">Retiro completo</span>
+      </div>
+      <span id="retiroPriceDisplay" class="font-heading text-lg font-bold text-gold">$4.00</span> 
+     </button>
+    </section>
+    
+    <section class="fade-up fade-up-d3">
+     <div class="flex items-center gap-2 mb-1">
+      <span class="w-7 h-7 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center">3</span>
+      <h2 class="font-heading text-xl font-semibold text-stone-800">Decoraciones extra</h2>
+     </div>
+     <p class="text-xs text-stone-400 mb-3 ml-9">Precio por uña · elige la cantidad de uñas</p>
+     <div id="decoGrid" class="space-y-2"></div>
+    </section>
+    
+    <section class="fade-up fade-up-d4">
+     <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center">4</span>
+      <h2 class="font-heading text-xl font-semibold text-stone-800">Domicilio</h2>
+     </div>
+     <div class="space-y-3">
+       <div class="relative">
+         <i data-lucide="map-pin" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold"></i>
+         <input type="text" id="domicilioUbicacion" placeholder="Dirección o ubicación" class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-gold focus:outline-none transition-all">
+       </div>
+       <div class="relative">
+         <i data-lucide="dollar-sign" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold"></i>
+         <input type="number" id="domicilioMonto" step="0.5" placeholder="Monto del domicilio" class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-gold focus:outline-none transition-all">
+       </div>
+     </div>
+    </section>
+    
+    <section class="sticky bottom-4 z-10 mt-6">
+     <div class="bg-white/90 backdrop-blur-md rounded-2xl p-5 card-glow border border-goldLight/40">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-xs text-stone-400 uppercase tracking-wider">Total estimado</p>
+        <p id="totalPrice" class="font-heading text-4xl font-bold gold-shimmer">$0.00</p>
+       </div>
+       <button onclick="resetAll()" class="p-2.5 rounded-xl border border-stone-200 hover:border-gold hover:bg-warmWhite transition-all" title="Reiniciar"> 
+        <i data-lucide="rotate-ccw" class="w-5 h-5 text-stone-400"></i> 
+       </button>
+      </div>
+      <div id="summary" class="mt-3 pt-3 border-t border-stone-100 hidden">
+       <div id="summaryContent" class="space-y-1 text-sm"></div>
+      </div>
+     </div>
+    </section>
+   </main>
+  </div>
+
+  <div id="priceModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container rounded-2xl p-6">
+      <div class="flex justify-between items-center mb-4 border-b pb-3 border-stone-200">
+        <h3 class="font-heading text-2xl font-bold gold-shimmer">Editar Precios</h3>
+        <button id="closeModalBtn" class="p-1 rounded-full hover:bg-stone-100 transition-all">
+          <i data-lucide="x" class="w-5 h-5 text-stone-500"></i>
+        </button>
+      </div>
+      <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        <div>
+          <h4 class="font-semibold text-gold mb-2 flex items-center gap-2"><i data-lucide="paintbrush" class="w-4 h-4"></i> Técnicas</h4>
+          <div id="priceEditTechList" class="space-y-2"></div>
+        </div>
+        <div class="border-t pt-3 border-stone-200">
+          <h4 class="font-semibold text-gold mb-2 flex items-center gap-2"><i data-lucide="package" class="w-4 h-4"></i> Retiro completo</h4>
+          <div class="flex items-center justify-between p-2 rounded-lg price-edit-item">
+            <span>Retiro completo</span>
+            <input type="number" id="editRetiroPrice" step="0.5" class="w-24 px-2 py-1 border rounded-lg text-center font-semibold border-stone-300" value="4.00">
+          </div>
+        </div>
+        <div class="border-t pt-3 border-stone-200">
+          <h4 class="font-semibold text-gold mb-2 flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i> Decoraciones (por uña)</h4>
+          <div id="priceEditDecoList" class="space-y-2"></div>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6 pt-3 border-t border-stone-200">
+        <button id="savePricesBtn" class="flex-1 py-2.5 rounded-xl btn-gold text-white font-semibold transition-all hover:opacity-90">Guardar Cambios</button>
+        <button id="cancelModalBtn" class="flex-1 py-2.5 rounded-xl border-2 border-stone-300 hover:border-gold transition-all">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const techniquesConfig = [
+    { id: 'esm', name: 'Esmaltado Semipermanente', price: 12, icon: 'paintbrush' },
+    { id: 'ped', name: 'Pedicura Semipermanente', price: 12, icon: 'footprints' },
+    { id: 'rub', name: 'Nivelación Rubber', price: 15, icon: 'layers' },
+    { id: 'dip', name: 'Dipping', price: 14, icon: 'droplets' },
+    { id: 'jel', name: 'Jelly Tips', price: 20, icon: 'gem' },
+    { id: 'bui', name: 'Builder Gel', price: 18, icon: 'shield' },
+  ];
+
+  const decorationsConfig = [
+    { id: 'espejo', name: 'Efecto Espejo', price: 0.50, icon: 'sparkles' },
+    { id: 'french', name: 'French', price: 0.20, icon: 'moon' },
+    { id: 'nailart', name: 'Nail Art', price: 3, icon: 'palette' },
+    { id: 'cateye', name: 'Cat Eye', price: 0.20, icon: 'eye' },
+    { id: 'dijes', name: 'Dijes', price: 0.50, icon: 'diamond' },
+    { id: 'relieve', name: 'Relieve', price: 0.50, icon: 'mountain' },
+    { id: 'blooming', name: 'Blooming', price: 0.30, icon: 'flower-2' },
+    { id: 'arreglo', name: 'Arreglo de Uña', price: 3, icon: 'wrench' },
+  ];
+
+  let retiroPrice = 4.00;
+  let selectedTech = null;
+  let retiroActive = false;
+  let decoState = {};
+  decorationsConfig.forEach(d => decoState[d.id] = 0);
+  let domicilioUbicacion = "";
+  let domicilioMonto = 0;
+  let isDarkMode = false;
+
+  // Renderizado inicial
+  function renderAll() {
+    const techGrid = document.getElementById('techGrid');
+    techGrid.innerHTML = '';
+    techniquesConfig.forEach(t => {
+      const btn = document.createElement('button');
+      btn.id = 'tech-' + t.id;
+      btn.className = 'flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-stone-200 bg-white transition-all hover:border-goldLight hover:shadow-sm text-center';
+      btn.innerHTML = `
+        <i data-lucide="${t.icon}" class="w-5 h-5 text-gold"></i>
+        <span class="font-semibold text-xs leading-tight">${t.name}</span>
+        <span class="font-heading text-lg font-bold text-gold">$${t.price.toFixed(2)}</span>
+      `;
+      btn.onclick = () => selectTech(t.id);
+      techGrid.appendChild(btn);
+    });
+
+    const decoGrid = document.getElementById('decoGrid');
+    decoGrid.innerHTML = '';
+    decorationsConfig.forEach(d => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between p-3 rounded-xl bg-white border border-stone-100 card-glow transition-all';
+      row.innerHTML = `
+        <div class="flex items-center gap-2.5 flex-1 min-w-0">
+          <i data-lucide="${d.icon}" class="w-4 h-4 text-gold flex-shrink-0"></i>
+          <div class="min-w-0">
+            <p class="font-semibold text-sm truncate">${d.name}</p>
+            <p class="text-xs text-stone-400">$${d.price.toFixed(2)} / uña</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="changeDeco('${d.id}',-1)" class="w-8 h-8 rounded-lg border border-stone-200 flex items-center justify-center hover:border-gold hover:bg-warmWhite transition-all">
+            <i data-lucide="minus" class="w-3.5 h-3.5 text-stone-500"></i>
+          </button>
+          <span id="deco-count-${d.id}" class="w-8 text-center font-bold text-sm">0</span>
+          <button onclick="changeDeco('${d.id}',1)" class="w-8 h-8 rounded-lg border border-stone-200 flex items-center justify-center hover:border-gold hover:bg-warmWhite transition-all">
+            <i data-lucide="plus" class="w-3.5 h-3.5 text-stone-500"></i>
+          </button>
+        </div>
+      `;
+      decoGrid.appendChild(row);
+    });
+    
+    lucide.createIcons();
+    updateTechSelection();
+    updateRetiroButton();
+    calcTotal();
+  }
+
+  function updateTechSelection() {
+    techniquesConfig.forEach(t => {
+      const el = document.getElementById('tech-' + t.id);
+      if (el) {
+        const priceSpan = el.querySelector('.font-heading');
+        if (priceSpan) priceSpan.textContent = '$' + t.price.toFixed(2);
+        if (t.id === selectedTech) {
+          el.className = 'flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-gold bg-warmWhite shadow-md transition-all text-center ring-2 ring-gold/20';
+        } else {
+          el.className = 'flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 border-stone-200 bg-white transition-all hover:border-goldLight hover:shadow-sm text-center';
+        }
+      }
+    });
+  }
+
+  function updateRetiroButton() {
+    const btn = document.getElementById('retiroBtn');
+    const chk = document.getElementById('retiroCheck');
+    const retiroDisplay = document.getElementById('retiroPriceDisplay');
+    if (retiroDisplay) retiroDisplay.textContent = `$${retiroPrice.toFixed(2)}`;
+    
+    if (retiroActive) {
+      if (btn) btn.className = 'w-full flex items-center justify-between p-3.5 rounded-xl border-2 border-gold bg-warmWhite transition-all shadow-md ring-2 ring-gold/20';
+      if (chk) {
+        chk.className = 'w-6 h-6 rounded-md check-active flex items-center justify-center transition-all';
+        const icon = chk.querySelector('i');
+        if (icon) icon.classList.remove('hidden');
+      }
+    } else {
+      if (btn) btn.className = 'w-full flex items-center justify-between p-3.5 rounded-xl border-2 border-stone-200 bg-white transition-all hover:border-goldLight';
+      if (chk) {
+        chk.className = 'w-6 h-6 rounded-md border-2 border-stone-300 flex items-center justify-center transition-all bg-white';
+        const icon = chk.querySelector('i');
+        if (icon) icon.classList.add('hidden');
+      }
+    }
+  }
+
+  function selectTech(id) {
+    selectedTech = selectedTech === id ? null : id;
+    updateTechSelection();
+    calcTotal();
+  }
+
+  function toggleRetiro() {
+    retiroActive = !retiroActive;
+    updateRetiroButton();
+    calcTotal();
+  }
+
+  function changeDeco(id, delta) {
+    decoState[id] = Math.max(0, Math.min(10, (decoState[id] || 0) + delta));
+    const span = document.getElementById('deco-count-' + id);
+    if (span) span.textContent = decoState[id];
+    calcTotal();
+  }
+
+  function getDomicilioData() {
+    const ubicacionInput = document.getElementById('domicilioUbicacion');
+    const montoInput = document.getElementById('domicilioMonto');
+    domicilioUbicacion = ubicacionInput ? ubicacionInput.value : "";
+    domicilioMonto = montoInput && montoInput.value ? parseFloat(montoInput.value) : 0;
+    if (isNaN(domicilioMonto)) domicilioMonto = 0;
+    return { ubicacion: domicilioUbicacion, monto: domicilioMonto };
+  }
+
+  function calcTotal() {
+    let total = 0;
+    const lines = [];
+    
+    if (selectedTech) {
+      const t = techniquesConfig.find(x => x.id === selectedTech);
+      total += t.price;
+      lines.push({ name: t.name, price: t.price });
+    }
+    
+    if (retiroActive) {
+      total += retiroPrice;
+      lines.push({ name: 'Retiro completo', price: retiroPrice });
+    }
+    
+    decorationsConfig.forEach(d => {
+      const qty = decoState[d.id] || 0;
+      if (qty > 0) {
+        const sub = d.price * qty;
+        total += sub;
+        lines.push({ name: `${d.name} ×${qty} uñas`, price: sub });
+      }
+    });
+    
+    const domicilioData = getDomicilioData();
+    if (domicilioData.ubicacion && domicilioData.ubicacion.trim() !== "") {
+      lines.push({ name: `📍 ${domicilioData.ubicacion}`, price: domicilioData.monto, isDomicilio: true });
+    } else if (domicilioData.monto > 0) {
+      lines.push({ name: `📍 Domicilio`, price: domicilioData.monto, isDomicilio: true });
+    }
+    total += domicilioData.monto;
+    
+    document.getElementById('totalPrice').textContent = '$' + total.toFixed(2);
+    
+    const summary = document.getElementById('summary');
+    const content = document.getElementById('summaryContent');
+    if (lines.length > 0) {
+      summary.classList.remove('hidden');
+      content.innerHTML = lines.map(l =>
+        `<div class="flex justify-between ${l.isDomicilio ? 'border-t border-dashed border-gold/30 pt-1 mt-1' : ''}">
+           <span class="text-stone-500 ${l.isDomicilio ? 'text-gold font-medium' : ''}">${l.name}</span>
+           <span class="font-semibold text-stone-700">$${l.price.toFixed(2)}</span>
+         </div>`
+      ).join('');
+    } else {
+      summary.classList.add('hidden');
+    }
+  }
+
+  function resetAll() {
+    selectedTech = null;
+    retiroActive = false;
+    decorationsConfig.forEach(d => decoState[d.id] = 0);
+    const ubicacionInput = document.getElementById('domicilioUbicacion');
+    const montoInput = document.getElementById('domicilioMonto');
+    if (ubicacionInput) ubicacionInput.value = "";
+    if (montoInput) montoInput.value = "";
+    domicilioUbicacion = "";
+    domicilioMonto = 0;
+    
+    updateTechSelection();
+    updateRetiroButton();
+    decorationsConfig.forEach(d => {
+      const span = document.getElementById('deco-count-' + d.id);
+      if (span) span.textContent = '0';
+    });
+    calcTotal();
+  }
+
+  // Modo oscuro
+  function applyDarkTheme(enable) {
+    const body = document.body;
+    const iconEl = document.getElementById('themeIcon');
+    if (enable) {
+      body.classList.add('dark-mode');
+      if (iconEl) iconEl.setAttribute('data-lucide', 'sun');
+    } else {
+      body.classList.remove('dark-mode');
+      if (iconEl) iconEl.setAttribute('data-lucide', 'moon');
+    }
+    lucide.createIcons();
+  }
+
+  function toggleDarkMode() {
+    isDarkMode = !isDarkMode;
+    localStorage.setItem('glamDarkMode', isDarkMode);
+    applyDarkTheme(isDarkMode);
+  }
+
+  // Modal de precios
+  const modal = document.getElementById('priceModal');
+  
+  function openPriceModal() {
+    const techListDiv = document.getElementById('priceEditTechList');
+    techListDiv.innerHTML = '';
+    techniquesConfig.forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'flex items-center justify-between p-2 rounded-lg price-edit-item';
+      div.innerHTML = `
+        <span>${t.name}</span>
+        <input type="number" step="0.5" data-tech-id="${t.id}" class="tech-price-input w-24 px-2 py-1 border rounded-lg text-center font-semibold border-stone-300" value="${t.price}">
+      `;
+      techListDiv.appendChild(div);
+    });
+    
+    const decoListDiv = document.getElementById('priceEditDecoList');
+    decoListDiv.innerHTML = '';
+    decorationsConfig.forEach(d => {
+      const div = document.createElement('div');
+      div.className = 'flex items-center justify-between p-2 rounded-lg price-edit-item';
+      div.innerHTML = `
+        <span>${d.name}</span>
+        <input type="number" step="0.1" data-deco-id="${d.id}" class="deco-price-input w-24 px-2 py-1 border rounded-lg text-center font-semibold border-stone-300" value="${d.price}">
+      `;
+      decoListDiv.appendChild(div);
+    });
+    
+    document.getElementById('editRetiroPrice').value = retiroPrice;
+    modal.style.display = 'flex';
+    lucide.createIcons();
+  }
+  
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+  
+  function savePrices() {
+    document.querySelectorAll('.tech-price-input').forEach(input => {
+      const techId = input.getAttribute('data-tech-id');
+      const newPrice = parseFloat(input.value);
+      if (!isNaN(newPrice) && newPrice >= 0) {
+        const tech = techniquesConfig.find(t => t.id === techId);
+        if (tech) tech.price = newPrice;
+      }
+    });
+    
+    document.querySelectorAll('.deco-price-input').forEach(input => {
+      const decoId = input.getAttribute('data-deco-id');
+      const newPrice = parseFloat(input.value);
+      if (!isNaN(newPrice) && newPrice >= 0) {
+        const deco = decorationsConfig.find(d => d.id === decoId);
+        if (deco) deco.price = newPrice;
+      }
+    });
+    
+    const newRetiro = parseFloat(document.getElementById('editRetiroPrice').value);
+    if (!isNaN(newRetiro) && newRetiro >= 0) retiroPrice = newRetiro;
+    
+    const priceData = {
+      techniques: techniquesConfig.map(t => ({ id: t.id, price: t.price })),
+      decorations: decorationsConfig.map(d => ({ id: d.id, price: d.price })),
+      retiroPrice: retiroPrice
+    };
+    localStorage.setItem('glamPrices', JSON.stringify(priceData));
+    
+    renderAll();
+    closeModal();
+  }
+
+  function loadSavedPrices() {
+    const saved = localStorage.getItem('glamPrices');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.techniques) {
+          data.techniques.forEach(savedTech => {
+            const tech = techniquesConfig.find(t => t.id === savedTech.id);
+            if (tech) tech.price = savedTech.price;
+          });
+        }
+        if (data.decorations) {
+          data.decorations.forEach(savedDeco => {
+            const deco = decorationsConfig.find(d => d.id === savedDeco.id);
+            if (deco) deco.price = savedDeco.price;
+          });
+        }
+        if (data.retiroPrice !== undefined) retiroPrice = data.retiroPrice;
+      } catch(e) {}
+    }
+  }
+
+  // Inicialización
+  loadSavedPrices();
+  renderAll();
+  
+  const savedTheme = localStorage.getItem('glamDarkMode');
+  if (savedTheme === 'true') {
+    isDarkMode = true;
+    applyDarkTheme(true);
+  }
+  
+  document.getElementById('themeToggleBtn').addEventListener('click', toggleDarkMode);
+  document.getElementById('priceEditBtn').addEventListener('click', openPriceModal);
+  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+  document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+  document.getElementById('savePricesBtn').addEventListener('click', savePrices);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  
+  document.getElementById('domicilioUbicacion').addEventListener('input', () => calcTotal());
+  document.getElementById('domicilioMonto').addEventListener('input', () => calcTotal());
+
+  // Element SDK
+  const defaultConfig = {
+    salon_name: 'glam.by.nath',
+    tagline: 'Nail Price Calculator',
+    background_color: '#FAF6F0',
+    surface_color: '#FFFFFF',
+    text_color: '#44403C',
+    gold_color: '#C9A96E',
+    accent_color: '#A8864A',
+    font_family: 'Cormorant Garamond',
+    font_size: 16,
+  };
+  function applyConfig(config) {
+    document.getElementById('salonName').textContent = config.salon_name || defaultConfig.salon_name;
+    document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
+    const gold = config.gold_color || defaultConfig.gold_color;
+    const font = config.font_family || defaultConfig.font_family;
+    const size = config.font_size || defaultConfig.font_size;
+    document.body.style.fontSize = size + 'px';
+    document.querySelectorAll('.text-gold').forEach(el => el.style.color = gold);
+    document.querySelectorAll('.bg-gold').forEach(el => el.style.backgroundColor = gold);
+    document.querySelectorAll('.border-gold').forEach(el => el.style.borderColor = gold);
+    document.querySelectorAll('.font-heading').forEach(el => el.style.fontFamily = `${font}, serif`);
+  }
+  window.elementSdk?.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk?.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk?.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk?.setConfig({ text_color: v }); } },
+        { get: () => config.gold_color || defaultConfig.gold_color, set: v => { config.gold_color = v; window.elementSdk?.setConfig({ gold_color: v }); } },
+      ],
+      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk?.setConfig({ font_family: v }); } },
+      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk?.setConfig({ font_size: v }); } },
+    }),
+  });
+  </script>
+ </body>
+</html>
